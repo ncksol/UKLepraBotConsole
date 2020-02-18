@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="chatsettings.json" />
+    <None Remove="reactions.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="chatsettings.json" />
+    <EmbeddedResource Include="reactions.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Telegram.Bot" Version="15.3.0" />
+    <PackageReference Include="Telegram.Bot.Extensions.Polling" Version="0.1.3" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,277 @@
+{
+   "items":[
+      {
+         "triggers":[
+            "путин"
+         ],
+         "replies":[
+            {
+               "text":"путин - хуютин"
+            },
+            {
+               "sticker":"CAADAgADFQQAAjq5FQKI6LjaN6X8ZwI"
+            },
+            {
+               "text":"путин - распутен"
+            },
+            {
+               "text":"путин - абсолютен"
+            },
+            {
+               "text":"путин - сыродутен"
+            },
+            {
+               "text":"путин - паскуден"
+            },
+			{
+               "sticker":"CAADAgADYwQAAjq5FQLE5pE8HVDFQAI"
+            },
+            {
+               "sticker":"CAADAgADJgQAAjq5FQLBgK7gqt4nGQI"
+            },
+            {
+               "sticker":"CAADAgAD1QMAAjq5FQJNy64d-crl8wI"
+            }
+         ]
+      },
+      {
+         "triggers":[
+            "корбин"
+         ],
+         "replies":[
+            {
+               "text":"корбин - хуёрбин"
+            },
+            {
+               "text":"корбин - прискорбен"
+            },
+            {
+               "text":"корбин - сгорблен"
+            }
+         ]
+      },
+      {
+         "triggers":[
+            "nyet"
+         ],
+         "replies":[
+            {
+               "text":"пидора ответ!"
+            }
+         ]
+      },
+      {
+        "isalwaysreply":"true",
+        "ismentionreply":"true",
+        "triggers":[
+           "энтерпрайз"
+        ],
+        "replies":[
+           {
+              "text":"хуентерпрайз!"
+           }
+        ]
+      },
+      {
+         "triggers":[
+            "навальн"
+         ],
+         "replies":[
+            {
+               "text":"навальный - овальный"
+            },
+            {
+               "text":"навальный - наворовальный"
+            },
+            {
+               "text":"навальный - сексуальный"
+            },
+            {
+               "text":"навальный - сакральный"
+            },
+            {
+               "text":"навальный - анальный"
+            },
+            {
+               "sticker":"CAADAgADhgEAAkEGFAM6lGkGZ11gPQI"
+            },
+            {
+               "sticker":"CAADAgADhwEAAkEGFAPmiiiT9oWrtAI"
+            },
+            {
+               "sticker":"CAADAgADHQEAAkEGFANnxGlOw7JqUAI"
+            },
+            {
+               "sticker":"CAADAgAD_gADQQYUAzkhn7E1oK_1Ag"
+            },
+            {
+               "sticker":"CAADAgADiQEAAkEGFAMqAj3rnl3S4QI"
+            },			
+            {
+               "text":"навальный - пероральный"
+            }
+         ]
+      },
+      {
+         "triggers":[
+            "слава роботам"
+         ],
+         "replies":[
+            {
+               "text":"Воистину слава!"
+            },
+            {
+               "sticker":"BQADBAADHQADmDVxAh2h6gc7L-sLAg"
+            }
+         ]
+      },
+      {
+         "isalwaysreply":"true",
+         "ismentionreply":"true",
+         "triggers":[
+            "пошел нахуй",
+            "иди нахуй",
+            "охуел",
+            "нахуй",
+            "иди в пизду",
+            "сука",
+            "завали"
+         ],
+         "replies":[
+            {
+               "text":"отвали козлина!"
+            },
+            {
+               "text":"нет ты!"
+            },
+            {
+               "sticker":"CAADAgADUAwAAhd6CgABApawz7gAAapWAg"
+            }
+         ]
+      },
+      {
+         "triggers":[
+            "азуре",
+            "азура",
+			" азур "
+         ],
+         "replies":[
+            {
+               "text":"азура - амбразура!"
+            }
+         ]
+      },
+      {
+         "triggers":[
+            "aжуре",
+            "ажура",
+			" ажур ",
+			" ажуры "
+         ],
+         "replies":[
+            {
+               "text":"ажур - абажур!"
+            }
+         ]
+      },
+      {
+         "triggers":[
+            "питон"
+         ],
+         "replies":[
+            {
+               "text":"питон - притон"
+            },
+            {
+               "text":"питон - хуитон"
+            }			
+         ]
+      },
+      {
+         "triggers":[
+            "жава"
+         ],
+         "replies":[
+            {
+               "text":"жава - канава"
+            }	
+         ]
+      },
+      {
+         "triggers":[
+            "дотнет"
+         ],
+         "replies":[
+            {
+               "text":"дотнет - авторитет!"   
+            },
+            {
+               "sticker":"CAADAgADXAcAAlOx9wOcdSc4J4D5eQI"
+            }				
+         ]
+      },
+      {
+         "isalwaysreply":"true",
+         "ismentionreply":"true",
+         "triggers":[
+            "🖕"
+         ],
+         "replies":[
+            {
+               "text":"отвали козлина!"
+            },
+            {
+               "sticker":"CAADAgADCQ0AAhd6CgAB37Eukv3Z8nYC"
+            }
+         ]
+      },
+      {
+         "isalwaysreply":"true",
+         "ismentionreply":"true",
+         "triggers":[
+            "жестянка",
+			"железяка",
+			"проклятая",
+			"тупая"
+         ],
+         "replies":[
+            {
+               "text":"поцелуй мой блестящий зад!"
+            },
+            {
+               "sticker":"CAADBAADGwADmDVxApFTHg4W1PB8Ag"
+            }
+         ]
+      },
+      {
+         "isalwaysreply":"true",
+         "ismentionreply":"true",
+         "triggers":[
+            "😘",
+            "😚",
+            "😍"
+         ],
+         "replies":[
+            {
+               "sticker":"BQADAwADnwEAAr-MkATl4c1rX1QTGwI"
+            },
+            {
+               "sticker":"CAADAgADIwADgxZWDppY9mKb56-KAg"
+            }
+         ]
+      },
+      {
+         "isalwaysreply":"false",
+         "ismentionreply":"false",
+         "triggers":[
+            "стар ситизен",
+            "старситизен"
+         ],
+         "replies":[
+            {
+               "text":"а че вышел уже?"
+            }
+         ]
+      }
+   ]
+}
