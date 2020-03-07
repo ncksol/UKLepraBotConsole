@@ -6,18 +6,27 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="chatsettings.json" />
-    <None Remove="reactions.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="chatsettings.json" />
-    <EmbeddedResource Include="reactions.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Telegram.Bot" Version="15.3.0" />
+    <PackageReference Include="CommandLineParser" Version="2.7.82" />
+    <PackageReference Include="Telegram.Bot" Version="15.4.0" />
     <PackageReference Include="Telegram.Bot.Extensions.Polling" Version="0.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="bot.token">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="boyans.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="chatsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="reactions.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="secret.key">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

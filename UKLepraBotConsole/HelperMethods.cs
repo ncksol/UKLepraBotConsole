@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using Telegram.Bot.Types;
 
 namespace UKLepraBotConsole
@@ -36,5 +38,25 @@ namespace UKLepraBotConsole
         {
             return MentionsId(message, Configuration.TelegramBotId);
         }
+
+        public static bool IsUrl(Message message, out string url)
+        {
+            var rgx = new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)");
+
+            var match = rgx.Match(message.Text);
+            url = match.ToString();
+
+            return match.Success;
+        }
+
+        public static string ReadToken(string fileName)
+        {
+            var file = new FileInfo(fileName);
+            if (file.Exists == false) return string.Empty;
+
+            using (var reader = file.OpenText())
+                return reader.ReadToEnd();
+        }
+
     }
 }

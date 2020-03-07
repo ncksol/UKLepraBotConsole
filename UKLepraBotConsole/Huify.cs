@@ -33,7 +33,7 @@ namespace UKLepraBotConsole
         public static string HuifyMe(string message)
         {
             var huifiedMessage = HuifyMeInternal(message);
-            if (String.IsNullOrEmpty(huifiedMessage)) return String.Empty;
+            if (string.IsNullOrEmpty(huifiedMessage)) return string.Empty;
 
             return huifiedMessage;
         }

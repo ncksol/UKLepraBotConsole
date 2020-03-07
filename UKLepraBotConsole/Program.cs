@@ -1,59 +1,182 @@
-﻿using Newtonsoft.Json;
+﻿using CommandLine;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Requests;
-using Telegram.Bot.Requests.Abstractions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
+using UKLepraBotConsole.Adapters;
+using UKLepraBotConsole.Models;
+using File = System.IO.File;
+using Timer = System.Timers.Timer;
 
 namespace UKLepraBotConsole
 {
-
     public static class Program
     {
         private static TelegramBotClient _bot;
         private static ChatSettings _chatSettings;
         private static ReactionsList _reactions;
+        private static BoyanList _boyans;
+        private static Timer _saveTimer;
+        private static bool _isClosing;
 
-        public static async Task Main()
+        public static async Task Main(string[] args)
         {
+            var parser = new Parser(with => with.CaseInsensitiveEnumValues = true);
+            var parsedArguments = parser.ParseArguments<CommandLineOptions>(args);
+
+            await parsedArguments.MapResult(async x => { await Run(x); }, async err => { await ShowErrors(err.ToList());});
+        }
+
+        private static async Task Run(CommandLineOptions options)
+        {
+            Configuration.BotToken = options.BotToken;
+            Configuration.TelegramBotId = options.BotId;
+            Configuration.SecretKey = options.SecretKey;
+
+#if DEBUG
+            if(string.IsNullOrEmpty(Configuration.BotToken))
+            {
+                Configuration.BotToken = HelperMethods.ReadToken("bot.token");
+            }
+            if(string.IsNullOrEmpty(Configuration.SecretKey))
+            {
+                Configuration.SecretKey = HelperMethods.ReadToken("secret.key");
+            }
+#endif
+
             _bot = new TelegramBotClient(Configuration.BotToken);
 
+            Console.WriteLine("Choose option:");
+            Console.WriteLine("1. Launch bot");
+            Console.WriteLine("2. Create webhook");
+            Console.WriteLine("3. Get webhook info");
+            Console.WriteLine("4. Delete webhook");
+
+            int.TryParse(Console.ReadLine(), out var selectedOption);            
+
+            switch(selectedOption)
+            {
+                case 1:
+                    await RunBot();
+                    break;
+                case 2:
+                    await CreateWebhook();
+                    break;
+                case 3:
+                    await GetWebhookInfo();
+                    break;
+                case 4:
+                    await DeleteWebhook();
+                    break;
+                default:                    
+                    Console.WriteLine("Unknown option");
+                    return;
+            }
+        }
+
+        private static async Task RunBot()
+        {
             var me = await _bot.GetMeAsync();
             Console.Title = me.Username;
-
-            var info = _bot.GetWebhookInfoAsync();
-            var cts = new CancellationTokenSource();
-
-            var a = await _bot.MakeRequestAsync<Boolean>((IRequest<Boolean>)new DeleteWebhookRequest(), cts.Token);
-
             Configuration.StartupTime = DateTimeOffset.UtcNow;
 
             LoadChatSettings();
             LoadReactions();
-
-
-            
-
-            // StartReceiving does not block the caller thread. Receiving is done on the ThreadPool.
-            _bot.StartReceiving(
-                new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync),
-                cts.Token
-            );
+            LoadBoyans();
 
             Console.WriteLine($"Start listening for @{me.Username}");
-            Console.ReadLine();
 
-            // Send cancellation request to stop bot
+            var cts = new CancellationTokenSource();
+
+            AppDomain.CurrentDomain.ProcessExit += (s, ev) =>
+            {
+                OnExit(cts);
+            };
+
+            Console.CancelKeyPress += (s, ev) =>
+            {
+                OnExit(cts);
+            };
+
+            SetupPeriodicSettingsSaving();
+
+            var updateReceiver = new QueuedUpdateReceiver(_bot);
+            updateReceiver.StartReceiving(new UpdateType[] { UpdateType.Message}, HandleErrorAsync, cts.Token);
+            await foreach (var update in updateReceiver.YieldUpdatesAsync())
+            {
+                await HandleUpdateAsync(update, cts.Token);
+            }
+        }
+
+        private static void OnExit(CancellationTokenSource cts)
+        {
+            if(_isClosing) return;
+
+            _isClosing = true;
+
+            _bot.SendTextMessageAsync(chatId: Configuration.MasterId, text: "I am dead").Wait();
+
             cts.Cancel();
+            SaveChatSettings();
+            SaveBoyans();
+            _saveTimer.Stop();
+        }
+
+        private static async Task CreateWebhook()
+        {
+            Console.WriteLine("Enter webhook url:");
+            var url = Console.ReadLine();
+            if(string.IsNullOrEmpty(url))
+            { 
+                Console.WriteLine("Invalid url");
+                return;
+            }
+
+            var success = await _bot.MakeRequestAsync(new SetWebhookRequest(url, null));
+            Console.WriteLine($"Webhook created: {success}");
+            Console.ReadKey();
+        }
+        
+        private static async Task GetWebhookInfo()
+        {
+            var info = await _bot.MakeRequestAsync(new GetWebhookInfoRequest());            
+            Console.WriteLine($"Webhook info:");
+            Console.WriteLine(JsonConvert.SerializeObject(info));
+            Console.ReadKey();
+        }
+        
+        private static async Task DeleteWebhook()
+        {
+            var success = await _bot.MakeRequestAsync(new DeleteWebhookRequest());
+            Console.WriteLine($"Webhook removed: {success}");
+            Console.ReadKey();
+        }
+
+        private static Task ShowErrors(List<Error> errors)
+        {
+            foreach (var err in errors)
+            {
+                if (err is UnknownOptionError unKnownError)
+                {
+                    Console.WriteLine($"{unKnownError.Token} - {unKnownError.ToString()}");
+                }
+                else
+                {
+                    Console.WriteLine(err.ToString());
+                }
+            }
+
+            return Task.FromResult(0);
         }
 
         public static async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken)
@@ -76,9 +199,10 @@ namespace UKLepraBotConsole
 
         private static async Task BotOnMessageReceived(Message message)
         {
-            if(message.Type == MessageType.ChatMembersAdded && message.NewChatMembers.Any())
+            if (message.Type == MessageType.ChatMembersAdded && message.NewChatMembers.Any())
             {
-                var newUser = message.NewChatMembers.First();//(x => x.IsBot == false);
+                var newUser = message.NewChatMembers.FirstOrDefault(x => x.IsBot == false);
+                if (newUser == null) return;
 
                 var name = $"{newUser.FirstName} {newUser.LastName}".TrimEnd();
                 var reply = $"[{name}](tg://user?id={newUser.Id}), ты вообще с какого посткода";
@@ -87,13 +211,13 @@ namespace UKLepraBotConsole
                         chatId: message.Chat.Id,
                         replyToMessageId: message.MessageId,
                         text: reply,
-                        parseMode:ParseMode.MarkdownV2);
-                
+                        parseMode: ParseMode.MarkdownV2);
+
                 Console.WriteLine("Processed ChatMembersAdded event");
                 return;
             }
 
-            if(message.Type == MessageType.ChatMemberLeft)
+            if (message.Type == MessageType.ChatMemberLeft)
             {
                 var sticker = new InputOnlineFile(Stickers.DaIHuiSNim);
                 await _bot.SendStickerAsync(chatId: message.Chat.Id, sticker: sticker);
@@ -102,9 +226,9 @@ namespace UKLepraBotConsole
                 return;
             }
 
-            if(message.Type == MessageType.Text)
+            if (message.Type == MessageType.Text || message.Type == MessageType.Sticker || (message.Type == MessageType.Document && message.Animation != null))
             {
-                var messageAdapterFactory = new MessageAdapterFactory(_bot, _chatSettings,_reactions);
+                var messageAdapterFactory = new MessageAdapterFactory(_bot, _chatSettings, _reactions, _boyans);
 
                 var messageAdapter = messageAdapterFactory.CreateAdapter(message);
                 await messageAdapter.Process(message);
@@ -127,19 +251,10 @@ namespace UKLepraBotConsole
             Console.WriteLine(ErrorMessage);
         }
 
-
         private static void LoadChatSettings()
         {
-            //var settingsString = AzureStorageAdapter.ReadBlobFromSettings("chatsettings.json");
-            //_chatSettings = JsonConvert.DeserializeObject<ChatSettings>(settingsString);
-
-            //using(var reader = new StreamReader("../../../chatsettings.json"))            
-            using(var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("UKLepraBotConsole.chatsettings.json"))
-            using(var reader = new StreamReader(stream))
-            {
-                var chatSettingsString = reader.ReadToEnd();
-                _chatSettings = JsonConvert.DeserializeObject<ChatSettings>(chatSettingsString);
-            }
+            var chatSettingsString = ReadSettings("chatsettings.json");
+            _chatSettings = JsonConvert.DeserializeObject<ChatSettings>(chatSettingsString);
 
             if (_chatSettings == null)
                 _chatSettings = new ChatSettings();
@@ -147,13 +262,68 @@ namespace UKLepraBotConsole
 
         private static void LoadReactions()
         {
-            //using (var reader = new StreamReader("../../../reactions.json"))
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("UKLepraBotConsole.reactions.json"))
-            using (var reader = new StreamReader(stream))
-            {
-                var reactionsString = reader.ReadToEnd();
-                _reactions = JsonConvert.DeserializeObject<ReactionsList>(reactionsString);
+            var reactionsString = ReadSettings("reactions.json");
+            _reactions = JsonConvert.DeserializeObject<ReactionsList>(reactionsString) ?? new ReactionsList();
+        }
+        
+        private static void LoadBoyans()
+        {
+            var boyansString = ReadSettings("boyans.json");
+            _boyans = JsonConvert.DeserializeObject<BoyanList>(boyansString) ?? new BoyanList();
+        }
+
+        private static string ReadSettings(string fileName)
+        {
+            var file = new FileInfo(fileName);
+            if (file.Exists == false) return string.Empty;
+
+            var settingString = string.Empty;
+            using (var reader = file.OpenText())
+            { 
+                settingString = reader.ReadToEnd();
             }
+
+            return settingString;
+        }
+
+        private static void SaveChatSettings()
+        {
+            try
+            {
+                var chatSettingsString = JsonConvert.SerializeObject(_chatSettings, Formatting.Indented);
+                File.WriteAllText("chatsettings.json", chatSettingsString);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        private static void SaveBoyans()
+        {
+            try
+            {
+                var boyansString = JsonConvert.SerializeObject(_boyans, Formatting.Indented);
+                File.WriteAllText("boyans.json", boyansString);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }            
+        }
+
+        private static void SetupPeriodicSettingsSaving()
+        {
+            _saveTimer = new Timer(20 * 60 * 1000);
+            _saveTimer.Elapsed += Timer_Elapsed;
+            _saveTimer.AutoReset = true;
+            _saveTimer.Start();
+        }
+
+        private static void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            SaveBoyans();
+            SaveChatSettings();
         }
     }
 }

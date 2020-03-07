@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace UKLepraBotConsole
+namespace UKLepraBotConsole.Models
 {
     public class Reaction
     {
