@@ -35,7 +35,7 @@ namespace UKLepraBotConsole.Adapters
             if (message.Type == MessageType.Text && !string.IsNullOrEmpty(message.Text) && AIAdapterActivators.Any(x => message.Text.ToLower().Contains(x)))
                 return new AIAdapter(_bot);
 
-            if (message.Type == MessageType.Text && HelperMethods.IsUrl(message, out _))
+            if ((message.Type == MessageType.Text && HelperMethods.IsUrl(message, out _)) || (message.Type == MessageType.Photo && message.Photo != null))
                 return new BoyanAdapter(_bot, _boyans);
 
             if (message.Chat.Type == ChatType.Private && message.From.Id == Configuration.MasterId && (message.Sticker != null || message.Animation != null))

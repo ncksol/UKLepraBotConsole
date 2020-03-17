@@ -38,7 +38,7 @@ namespace UKLepraBotConsole
         }
 
         private static async Task Run(CommandLineOptions options)
-        {
+        {            
             Configuration.BotToken = options.BotToken;
             Configuration.TelegramBotId = options.BotId;
             Configuration.SecretKey = options.SecretKey;
@@ -90,31 +90,38 @@ namespace UKLepraBotConsole
             Console.Title = me.Username;
             Configuration.StartupTime = DateTimeOffset.UtcNow;
 
-            LoadChatSettings();
-            LoadReactions();
-            LoadBoyans();
+            try
+            { 
+                LoadChatSettings();
+                LoadReactions();
+                LoadBoyans();
 
-            Console.WriteLine($"Start listening for @{me.Username}");
+                Console.WriteLine($"Start listening for @{me.Username}");
 
-            var cts = new CancellationTokenSource();
+                var cts = new CancellationTokenSource();
 
-            AppDomain.CurrentDomain.ProcessExit += (s, ev) =>
+                AppDomain.CurrentDomain.ProcessExit += (s, ev) =>
+                {
+                    OnExit(cts);
+                };
+
+                Console.CancelKeyPress += (s, ev) =>
+                {
+                    OnExit(cts);
+                };
+
+                SetupPeriodicSettingsSaving();
+
+                var updateReceiver = new QueuedUpdateReceiver(_bot);
+                updateReceiver.StartReceiving(new UpdateType[] { UpdateType.Message}, HandleErrorAsync, cts.Token);
+                await foreach (var update in updateReceiver.YieldUpdatesAsync())
+                {
+                    await HandleUpdateAsync(update, cts.Token);
+                }
+            }
+            catch(Exception ex)
             {
-                OnExit(cts);
-            };
-
-            Console.CancelKeyPress += (s, ev) =>
-            {
-                OnExit(cts);
-            };
-
-            SetupPeriodicSettingsSaving();
-
-            var updateReceiver = new QueuedUpdateReceiver(_bot);
-            updateReceiver.StartReceiving(new UpdateType[] { UpdateType.Message}, HandleErrorAsync, cts.Token);
-            await foreach (var update in updateReceiver.YieldUpdatesAsync())
-            {
-                await HandleUpdateAsync(update, cts.Token);
+                _bot.SendTextMessageAsync(chatId: Configuration.MasterId, text: $"Exception:{Environment.NewLine}{ex.Message}").Wait();
             }
         }
 
@@ -129,6 +136,7 @@ namespace UKLepraBotConsole
             cts.Cancel();
             SaveChatSettings();
             SaveBoyans();
+            CleanTemp();
             _saveTimer.Stop();
         }
 
@@ -226,7 +234,8 @@ namespace UKLepraBotConsole
                 return;
             }
 
-            if (message.Type == MessageType.Text || message.Type == MessageType.Sticker || (message.Type == MessageType.Document && message.Animation != null))
+            if (message.Type == MessageType.Text || message.Type == MessageType.Sticker || (message.Type == MessageType.Document && message.Animation != null) || 
+                (message.Type == MessageType.Photo && message.Photo != null))
             {
                 var messageAdapterFactory = new MessageAdapterFactory(_bot, _chatSettings, _reactions, _boyans);
 
@@ -312,6 +321,18 @@ namespace UKLepraBotConsole
             }            
         }
 
+        private static void CleanTemp()
+        {
+            var tempFolderDir = new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "Tmp"));
+            if(tempFolderDir.Exists)
+            {
+                foreach (var tmpFile in tempFolderDir.EnumerateFiles())
+                {
+                    tmpFile.Delete();
+                }
+            }
+        }
+
         private static void SetupPeriodicSettingsSaving()
         {
             _saveTimer = new Timer(20 * 60 * 1000);
@@ -324,6 +345,7 @@ namespace UKLepraBotConsole
         {
             SaveBoyans();
             SaveChatSettings();
+            CleanTemp();
         }
     }
 }

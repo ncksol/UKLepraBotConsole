@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -56,6 +57,22 @@ namespace UKLepraBotConsole
 
             using (var reader = file.OpenText())
                 return reader.ReadToEnd();
+        }
+
+        public static List<bool> GetHash(Bitmap bmpSource)
+        {
+            var lResult = new List<bool>();
+            //create new image with 16x16 pixel
+            var bmpMin = new Bitmap(bmpSource, new Size(16, 16));
+            for (int j = 0; j < bmpMin.Height; j++)
+            {
+                for (int i = 0; i < bmpMin.Width; i++)
+                {
+                    //reduce colors to true / false                
+                    lResult.Add(bmpMin.GetPixel(i, j).GetBrightness() < 0.5f);
+                }
+            }
+            return lResult;
         }
 
     }

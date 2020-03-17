@@ -6,10 +6,11 @@ namespace UKLepraBotConsole.Models
 {
     public class Boyan
     {
+        public bool[] ImageHash { get;set;}
         public string Url { get;set;}
         public string ChatId { get;set;}
         public string MessageId { get;set;}
-        public DateTimeOffset DateCreated { get;set;}
+        public DateTimeOffset DateCreated { get;set;}        
     }
 
     public class BoyanList
