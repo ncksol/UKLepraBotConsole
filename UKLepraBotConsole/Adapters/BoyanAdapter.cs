@@ -105,7 +105,7 @@ namespace UKLepraBotConsole.Adapters
             foreach (var imageBoyan in Boyans.Items.Where(x => x.ImageHash != null))
             {
                 var similarity = hash.CompareWith(imageBoyan.ImageHash);
-                if (similarity >= 80)
+                if (similarity >= 95)
                 {
                     boyan = imageBoyan;
                     break;
