@@ -52,6 +52,10 @@ namespace UKLepraBotConsole
             {
                 Configuration.SecretKey = HelperMethods.ReadToken("secret.key");
             }
+            if(string.IsNullOrEmpty(Configuration.TelegramBotId))
+            {
+                Configuration.TelegramBotId = "ukleprabot";
+            }
 #endif
 
             _bot = new TelegramBotClient(Configuration.BotToken);

@@ -11,7 +11,7 @@ namespace UKLepraBotConsole
         public readonly static int MasterId = 178846839;
         public readonly static string AdminIds = "118698210";
 
-        public static string TelegramBotId { get; set; } = "ukleprabot";
+        public static string TelegramBotId { get; set; }
 
         private static string _botToken;
         public static string BotToken

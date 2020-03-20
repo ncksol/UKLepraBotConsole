@@ -262,9 +262,10 @@ namespace UKLepraBotConsole
             var isBanning = IsBanning(text, message);
             if (isBanning == false) return null;
             
-            text = text.Substring($"/ban@{Configuration.TelegramBotId} ".Length).Trim();
+            text = text.Substring($"/ban@{Configuration.TelegramBotId}".Length).Trim();
 
-            HelperMethods.IsUrl(text, out var url);
+            if(HelperMethods.IsUrl(text, out var url) == false) return null;
+
             var uri = new Uri(url.TrimEnd('/', '?'));
 
             string cleanUrl;
