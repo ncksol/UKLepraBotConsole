@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -29,7 +27,7 @@ namespace UKLepraBotConsole.Adapters
                 boyan = await ProcessImageBoyan(message);
             else return;
 
-            if(boyan != null)
+            if(boyan != null && boyan.IsBanned == false)
             {
                 var choice = HelperMethods.RandomInt(5);
 
@@ -60,7 +58,7 @@ namespace UKLepraBotConsole.Adapters
 
         private Boyan ProcessUrlBoyan(Message message)
         {
-            HelperMethods.IsUrl(message, out var url);
+            HelperMethods.IsUrl(message.Text, out var url);
             var uri = new Uri(url.TrimEnd('/', '?'));
 
             string cleanUrl;
@@ -98,14 +96,14 @@ namespace UKLepraBotConsole.Adapters
                 var file = await Bot.GetInfoAndDownloadFileAsync(biggestPhoto.FileId, stream);
             }
 
-            var hash = new ImgHash(16);
+            var hash = new ImgHash();
             hash.GenerateFromPath(filePath);
 
             Boyan boyan = null;
             foreach (var imageBoyan in Boyans.Items.Where(x => x.ImageHash != null))
             {
                 var similarity = hash.CompareWith(imageBoyan.ImageHash);
-                if (similarity >= 95)
+                if (similarity >= 99)
                 {
                     boyan = imageBoyan;
                     break;

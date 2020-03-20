@@ -1,23 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using UKLepraBotConsole.Models;
 
 namespace UKLepraBotConsole
 {
     public class CommandAdapter : MessageAdapterBase
     {
-        public CommandAdapter(TelegramBotClient bot, ChatSettings chatSettings) : base(bot, chatSettings)
+        public CommandAdapter(TelegramBotClient bot, ChatSettings chatSettings, BoyanList boyanList) : base(bot, chatSettings, boyanList)
         {
         }
 
         public override async Task Process(Message message)
         {
-            var messageText = message.Text;
+            string messageText;
+            if (message.Type == MessageType.Photo)
+                messageText = message.Caption;
+            else
+                messageText = message.Text;
+            
             var conversationId = message.Chat.Id.ToString();
 
             var delaySettings = ChatSettings.DelaySettings.ContainsKey(conversationId)
@@ -44,6 +51,8 @@ namespace UKLepraBotConsole
                 reply = DelayCommand(message);
             else if (messageText.ToLower().Contains("/secret"))
                 reply = SecretCommand(message);
+            else if (messageText.ToLower().Contains("/ban"))
+                reply = await BanCommand(message);
             else if (messageText.ToLower().Contains("/reload"))
             {
                 ReloadReactionsCommand();
@@ -226,6 +235,111 @@ namespace UKLepraBotConsole
             var secretMessage = string.Join(" ", messageParts.Skip(2));
 
             return secretMessage;
+        }
+
+        private async Task<string> BanCommand(Message message)
+        {
+            var reply = string.Empty;
+
+            if (VerifyAdminCommandAccess(message) == false)
+            {
+                reply = GetAcccessDeniedCommandText();
+                return reply;
+            }
+
+            if (message.Type == MessageType.Text)
+                reply = BanUrlBoyan(message);
+            else if (message.Type == MessageType.Photo)
+                reply = await BanImageBoyan(message);
+            
+            return reply;
+        }
+
+
+        private string BanUrlBoyan(Message message)
+        {
+            var text = message.Text;
+            var isBanning = IsBanning(text, message);
+            if (isBanning == false) return null;
+            
+            text = text.Substring($"/ban@{Configuration.TelegramBotId} ".Length).Trim();
+
+            HelperMethods.IsUrl(text, out var url);
+            var uri = new Uri(url.TrimEnd('/', '?'));
+
+            string cleanUrl;
+            if (uri.Host.Contains("youtube.com"))
+            {
+                cleanUrl = uri.Host.Replace("www.", "") + uri.PathAndQuery;
+            }
+            else
+            {
+                cleanUrl = uri.Host.Replace("www.", "") + uri.AbsolutePath;
+            }
+
+            string reply;
+            var boyan = Boyans.Items.Where(x => x.Url != null).OrderByDescending(x => x.DateCreated).FirstOrDefault(x => x.Url.Contains(cleanUrl));
+            if(boyan != null)
+            {
+                boyan.IsBanned = true;
+                reply = "Небоян забанен!";
+            }
+            else
+            {
+                reply = "Боян не найден!";
+            }
+
+            return reply;
+        }
+
+        private async Task<string> BanImageBoyan(Message message)
+        {
+            var isBanning = IsBanning(message.Caption, message);
+            if(isBanning == false) return null;
+
+            var biggestPhoto = message.Photo.OrderByDescending(x => x.FileSize).FirstOrDefault();
+
+            var tempFolderPath = Path.Combine(AppContext.BaseDirectory, "Tmp");
+            if (Directory.Exists(tempFolderPath) == false)
+                Directory.CreateDirectory(tempFolderPath);
+
+            var filePath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}.jpg");
+            using (var stream = System.IO.File.Create(filePath))
+            {
+                var file = await Bot.GetInfoAndDownloadFileAsync(biggestPhoto.FileId, stream);
+            }
+
+            var hash = new ImgHash();
+            hash.GenerateFromPath(filePath);
+
+            Boyan boyan = null;
+            foreach (var imageBoyan in Boyans.Items.Where(x => x.ImageHash != null))
+            {
+                var similarity = hash.CompareWith(imageBoyan.ImageHash);
+                if (similarity >= 99)
+                {
+                    boyan = imageBoyan;
+                    break;
+                }
+            }
+
+            string reply;
+            if (boyan != null)
+            {
+                boyan.IsBanned = true;
+                reply = "Небоян забанен!";
+            }
+            else
+            {
+                reply = "Боян не найден!";
+            }
+
+            return reply;
+        }
+
+        private bool IsBanning(string text, Message message)
+        {
+            return text.StartsWith("/ban") && message.From.Id == Configuration.MasterId;
         }
     }
 }

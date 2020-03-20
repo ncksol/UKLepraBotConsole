@@ -27,6 +27,12 @@ namespace UKLepraBotConsole
             ChatSettings = chatSettings;
         }
         
+        protected MessageAdapterBase(TelegramBotClient bot, ChatSettings chatSettings, BoyanList boyans) :this(bot)
+        {
+            ChatSettings = chatSettings;
+            Boyans = boyans;
+        }
+        
         protected MessageAdapterBase(TelegramBotClient bot, BoyanList boyans):this(bot)
         {
             Boyans = boyans;

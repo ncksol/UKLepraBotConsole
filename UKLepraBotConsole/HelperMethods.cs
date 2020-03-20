@@ -40,11 +40,11 @@ namespace UKLepraBotConsole
             return MentionsId(message, Configuration.TelegramBotId);
         }
 
-        public static bool IsUrl(Message message, out string url)
+        public static bool IsUrl(string message, out string url)
         {
             var rgx = new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)");
 
-            var match = rgx.Match(message.Text);
+            var match = rgx.Match(message);
             url = match.ToString();
 
             return match.Success;

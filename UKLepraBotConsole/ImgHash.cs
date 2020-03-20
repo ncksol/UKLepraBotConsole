@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Text;
 
 /// <summary>
 /// Taken from https://github.com/ukushu/ImgComparator
@@ -11,19 +11,15 @@ namespace UKLepraBotConsole
 {
     public class ImgHash
     {
-        private readonly int _hashSide;
+        private readonly int _hashSide = 16;
 
-        private bool[] _hashData;
-        public bool[] HashData
-        {
-            get { return _hashData; }
-        }
+        public string HashData { get; private set;}
 
         public Image Img
         {
             get
             {
-                return Bitmap.FromFile(FilePath);
+                return Image.FromFile(FilePath);
             }
         }
 
@@ -42,19 +38,8 @@ namespace UKLepraBotConsole
             get { return Path.GetDirectoryName(FilePath); }
         }
 
-        private string _imgSize;
-        public string ImgSize
-        {
-            get { return _imgSize; }
-        }
+        public string ImgSize { get; private set; }
 
-
-        public ImgHash(int hashSideSize = 16)
-        {
-            _hashSide = hashSideSize;
-
-            _hashData = new bool[hashSideSize * hashSideSize];
-        }
 
         /// <summary>
         /// Method to compare 2 image hashes
@@ -69,7 +54,7 @@ namespace UKLepraBotConsole
         /// Method to compare 2 image hashes
         /// </summary>
         /// <returns>% of similarity</returns>
-        public double CompareWith(bool[] hashData)
+        public double CompareWith(string hashData)
         {
             if (HashData.Length != hashData.Length)
             {
@@ -93,9 +78,9 @@ namespace UKLepraBotConsole
         {
             FilePath = path;
 
-            Bitmap image = (Bitmap)Image.FromFile(path, true);
+            var image = (Bitmap)Image.FromFile(path, true);
 
-            _imgSize = $"{image.Size.Width}x{image.Size.Height}";
+            ImgSize = $"{image.Size.Width}x{image.Size.Height}";
 
             GenerateFromImage(image);
 
@@ -104,21 +89,21 @@ namespace UKLepraBotConsole
 
         private void GenerateFromImage(Bitmap img)
         {
-            List<bool> lResult = new List<bool>();
+            var result = new StringBuilder();
 
             //resize img to 16x16px (by default) or with configured size 
-            Bitmap bmpMin = new Bitmap(img, new Size(_hashSide, _hashSide));
+            var bmpMin = new Bitmap(img, new Size(_hashSide, _hashSide));
 
             for (int j = 0; j < bmpMin.Height; j++)
             {
                 for (int i = 0; i < bmpMin.Width; i++)
                 {
                     //reduce colors to true and false
-                    lResult.Add(bmpMin.GetPixel(i, j).GetBrightness() < 0.5f);
+                    result.Append(bmpMin.GetPixel(i, j).GetBrightness() < 0.5f ? '0' : '1');
                 }
             }
 
-            _hashData = lResult.ToArray();
+            HashData = result.ToString();
 
             bmpMin.Dispose();
         }

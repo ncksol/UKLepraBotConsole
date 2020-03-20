@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -12,7 +9,7 @@ namespace UKLepraBotConsole.Adapters
 {
     public class MessageAdapterFactory
     {
-        public static readonly List<string> CommandAdapterActivators = new List<string> { "/status", "/huify", "/unhuify", "/uptime", "/delay", "/secret", "/reload", "/sticker" };
+        public static readonly List<string> CommandAdapterActivators = new List<string> { "/status", "/huify", "/unhuify", "/uptime", "/delay", "/secret", "/reload", "/sticker", "/ban" };
         public static readonly List<string> AIAdapterActivators = new List<string> { "погугли" };
         private readonly TelegramBotClient _bot;
         private readonly ChatSettings _chatSettings;
@@ -30,12 +27,15 @@ namespace UKLepraBotConsole.Adapters
         public MessageAdapterBase CreateAdapter(Message message)
         {
             if (message.Type == MessageType.Text && HelperMethods.MentionsBot(message) && !string.IsNullOrEmpty(message.Text) && CommandAdapterActivators.Any(x => message.Text.ToLower().Contains(x)))
-                return new CommandAdapter(_bot, _chatSettings);
+                return new CommandAdapter(_bot, _chatSettings, _boyans);
+
+            if (message.Type == MessageType.Photo && !string.IsNullOrEmpty(message.Caption) && CommandAdapterActivators.Any(x => message.Caption.ToLower().Contains(x)))
+                return new CommandAdapter(_bot, _chatSettings, _boyans);
 
             if (message.Type == MessageType.Text && !string.IsNullOrEmpty(message.Text) && AIAdapterActivators.Any(x => message.Text.ToLower().Contains(x)))
                 return new AIAdapter(_bot);
 
-            if ((message.Type == MessageType.Text && HelperMethods.IsUrl(message, out _)) || (message.Type == MessageType.Photo && message.Photo != null))
+            if (message.ReplyToMessage == null && ((message.Type == MessageType.Text && HelperMethods.IsUrl(message.Text, out _)) || (message.Type == MessageType.Photo && message.Photo != null)))
                 return new BoyanAdapter(_bot, _boyans);
 
             if (message.Chat.Type == ChatType.Private && message.From.Id == Configuration.MasterId && (message.Sticker != null || message.Animation != null))
