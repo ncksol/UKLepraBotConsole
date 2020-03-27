@@ -21,5 +21,6 @@ namespace UKLepraBotConsole.Models
     {
         public string Text { get; set; }
         public string Sticker { get; set; }
+        public string Gif { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.InputFiles;
 using UKLepraBotConsole.Models;
 
 namespace UKLepraBotConsole
@@ -38,6 +39,14 @@ namespace UKLepraBotConsole
                             chatId: message.Chat.Id,
                             replyToMessageId: message.MessageId,
                             sticker: reactionReply.Sticker);
+            }
+            
+            if(string.IsNullOrEmpty(reactionReply.Gif) == false)
+            {
+                await Bot.SendDocumentAsync(
+                            chatId: message.Chat.Id,
+                            replyToMessageId: message.MessageId,
+                            document: new InputOnlineFile(reactionReply.Gif));
             }
 
             Console.WriteLine("Processed Reaction event");
