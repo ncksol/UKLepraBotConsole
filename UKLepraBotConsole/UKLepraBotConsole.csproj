@@ -13,21 +13,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="bot.token">
+    <None Update="bot.token" CopyToPublishDirectory="Never">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="boyans.json">
+    <None Update="boyans.json" CopyToPublishDirectory="Never">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="chatsettings.json">
+    <None Update="chatsettings.json" CopyToPublishDirectory="Never">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="reactions.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="secret.key">
+    <None Update="secret.key" CopyToPublishDirectory="Never">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
 </Project>

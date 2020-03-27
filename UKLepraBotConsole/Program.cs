@@ -66,7 +66,7 @@ namespace UKLepraBotConsole
             Console.WriteLine("3. Get webhook info");
             Console.WriteLine("4. Delete webhook");
 
-            int.TryParse(Console.ReadLine(), out var selectedOption);            
+            int.TryParse(Console.ReadLine(), out var selectedOption);
 
             switch(selectedOption)
             {
@@ -261,7 +261,12 @@ namespace UKLepraBotConsole
                 _ => exception.ToString()
             };
 
-            Console.WriteLine(ErrorMessage);
+            Console.WriteLine(ErrorMessage);            
+
+            if((exception is ApiRequestException) == false)
+            {
+                _bot.SendTextMessageAsync(chatId: Configuration.MasterId, text: $"Exception:{Environment.NewLine}{ErrorMessage}").Wait();
+            }
         }
 
         private static void LoadChatSettings()
