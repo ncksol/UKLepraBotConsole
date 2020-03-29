@@ -15,5 +15,8 @@ namespace UKLepraBotConsole
 
         [Option("secret", Required = false, HelpText = "Secret Key.")]
         public string SecretKey { get; set; }
+
+        [Option("service", Required = false, HelpText = "Run as a Service.")]
+        public bool IsService { get; set; }
     }
 }

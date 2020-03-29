@@ -60,31 +60,38 @@ namespace UKLepraBotConsole
 
             _bot = new TelegramBotClient(Configuration.BotToken);
 
-            Console.WriteLine("Choose option:");
-            Console.WriteLine("1. Launch bot");
-            Console.WriteLine("2. Create webhook");
-            Console.WriteLine("3. Get webhook info");
-            Console.WriteLine("4. Delete webhook");
-
-            int.TryParse(Console.ReadLine(), out var selectedOption);
-
-            switch(selectedOption)
+            if(options.IsService)
             {
-                case 1:
-                    await RunBot();
-                    break;
-                case 2:
-                    await CreateWebhook();
-                    break;
-                case 3:
-                    await GetWebhookInfo();
-                    break;
-                case 4:
-                    await DeleteWebhook();
-                    break;
-                default:                    
-                    Console.WriteLine("Unknown option");
-                    return;
+                await RunBot();
+            }
+            else
+            { 
+                Console.WriteLine("Choose option:");
+                Console.WriteLine("1. Launch bot");
+                Console.WriteLine("2. Create webhook");
+                Console.WriteLine("3. Get webhook info");
+                Console.WriteLine("4. Delete webhook");
+
+                int.TryParse(Console.ReadLine(), out var selectedOption);
+
+                switch(selectedOption)
+                {
+                    case 1:
+                        await RunBot();
+                        break;
+                    case 2:
+                        await CreateWebhook();
+                        break;
+                    case 3:
+                        await GetWebhookInfo();
+                        break;
+                    case 4:
+                        await DeleteWebhook();
+                        break;
+                    default:                    
+                        Console.WriteLine("Unknown option");
+                        return;
+                }
             }
         }
 
