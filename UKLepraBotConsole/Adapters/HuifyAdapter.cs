@@ -48,7 +48,7 @@ namespace UKLepraBotConsole
                 {
                     delay[conversationId] -= 1;
                 }
-                else if (delay[conversationId] == 0 && message.From.Id != Configuration.MasterId)
+                else if (delay[conversationId] == 0 && message.From.Id != Configuration.MasterId && string.IsNullOrEmpty(message.Text) == false)
                 {
                     shouldProcessMessage = true;
                 }
