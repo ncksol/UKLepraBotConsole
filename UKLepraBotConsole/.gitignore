@@ -351,3 +351,4 @@ MigrationBackup/
 
 bot.token
 secret.key
+Data/**

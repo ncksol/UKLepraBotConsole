@@ -13,19 +13,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="bot.token" CopyToPublishDirectory="Never">
+    <None Update="Data\bot.token" CopyToPublishDirectory="Never">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="boyans.json" CopyToPublishDirectory="Never">
+    <None Update="Data\boyans.json" CopyToPublishDirectory="Never">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="chatsettings.json" CopyToPublishDirectory="Never">
+    <None Update="Data\chatsettings.json" CopyToPublishDirectory="Never">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="reactions.json">
+    <None Update="Data\reactions.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="secret.key" CopyToPublishDirectory="Never">
+    <None Update="Data\secret.key" CopyToPublishDirectory="Never">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

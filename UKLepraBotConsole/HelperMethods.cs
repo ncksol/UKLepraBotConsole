@@ -52,7 +52,7 @@ namespace UKLepraBotConsole
 
         public static string ReadToken(string fileName)
         {
-            var file = new FileInfo(fileName);
+            var file = new FileInfo(Path.Combine(AppContext.BaseDirectory, "Data", fileName));
             if (file.Exists == false) return string.Empty;
 
             using (var reader = file.OpenText())

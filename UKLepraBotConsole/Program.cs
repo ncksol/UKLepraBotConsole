@@ -43,7 +43,6 @@ namespace UKLepraBotConsole
             Configuration.TelegramBotId = options.BotId;
             Configuration.SecretKey = options.SecretKey;
 
-#if DEBUG
             if(string.IsNullOrEmpty(Configuration.BotToken))
             {
                 Configuration.BotToken = HelperMethods.ReadToken("bot.token");
@@ -56,7 +55,6 @@ namespace UKLepraBotConsole
             {
                 Configuration.TelegramBotId = "ukleprabot";
             }
-#endif
 
             _bot = new TelegramBotClient(Configuration.BotToken);
 
@@ -299,7 +297,7 @@ namespace UKLepraBotConsole
 
         private static string ReadSettings(string fileName)
         {
-            var file = new FileInfo(fileName);
+            var file = new FileInfo(Path.Combine(AppContext.BaseDirectory, "Data", fileName));
             if (file.Exists == false) return string.Empty;
 
             var settingString = string.Empty;
@@ -310,13 +308,18 @@ namespace UKLepraBotConsole
 
             return settingString;
         }
+        
+        private static void SaveSettings(string fileName, string data)
+        {
+            File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "Data", fileName), data);
+        }
 
         private static void SaveChatSettings()
         {
             try
             {
                 var chatSettingsString = JsonConvert.SerializeObject(_chatSettings, Formatting.Indented);
-                File.WriteAllText("chatsettings.json", chatSettingsString);
+                SaveSettings("chatsettings.json", chatSettingsString);
             }
             catch(Exception e)
             {
@@ -329,7 +332,7 @@ namespace UKLepraBotConsole
             try
             {
                 var boyansString = JsonConvert.SerializeObject(_boyans, Formatting.Indented);
-                File.WriteAllText("boyans.json", boyansString);
+                SaveSettings("boyans.json", boyansString);
             }
             catch (Exception e)
             {
