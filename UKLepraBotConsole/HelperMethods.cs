@@ -13,7 +13,7 @@ namespace UKLepraBotConsole
         public static bool YesOrNo()
         {
             var rnd = new Random();
-            return rnd.Next() % 2 == 0;
+            return rnd.Next(3) == 0; //25%
         }
 
         public static int RandomInt(int max)
