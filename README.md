@@ -1,6 +1,6 @@
 # UK Lepra Chat Telegram Bot
 
-Victorious, happy and glorious since 1707
+Victorious, happy and glorious since 1707 by [@ncksol](https://t.me/ncksol)
 
 [Join chat](https://t.me/joinchat/Cqj8dz-ls-_DnfPvNHacKg)
 
