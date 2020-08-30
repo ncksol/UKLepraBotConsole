@@ -23,11 +23,11 @@ namespace UKLepraBotConsole.Adapters
 
             if (message.Type == MessageType.Text)
                 boyan = ProcessUrlBoyan(message);
-            else if(message.Type == MessageType.Photo)
-                boyan = await ProcessImageBoyan(message);
+            //else if(message.Type == MessageType.Photo)
+                //boyan = await ProcessImageBoyan(message);
             else return;
 
-            if(boyan != null && boyan.IsBanned == false)
+            if(boyan != null && boyan.IsBanned == false && boyan.AuthorId != message.From.Id.ToString())
             {
                 var choice = HelperMethods.RandomInt(5);
 
@@ -75,7 +75,7 @@ namespace UKLepraBotConsole.Adapters
 
             if(boyan == null)
             {
-                var newBoyan = new Boyan { Url = cleanUrl, MessageId = message.MessageId.ToString(), ChatId = message.Chat.Id.ToString(), DateCreated = DateTimeOffset.UtcNow };
+                var newBoyan = new Boyan { Url = cleanUrl, MessageId = message.MessageId.ToString(), ChatId = message.Chat.Id.ToString(), DateCreated = DateTimeOffset.UtcNow, AuthorId = message.From.Id.ToString() };
                 Boyans.Items.Add(newBoyan);
             }
 

@@ -9,7 +9,7 @@ namespace UKLepraBotConsole.Adapters
 {
     public class MessageAdapterFactory
     {
-        public static readonly List<string> CommandAdapterActivators = new List<string> { "/status", "/huify", "/unhuify", "/uptime", "/delay", "/secret", "/reload", "/sticker", "/ban" };
+        public static readonly List<string> CommandAdapterActivators = new List<string> { "/status", "/huify", "/unhuify", "/uptime", "/delay", "/secret", "/reload", "/sticker", "/ban", "/version" };
         public static readonly List<string> AIAdapterActivators = new List<string> { "погугли" };
         private readonly TelegramBotClient _bot;
         private readonly ChatSettings _chatSettings;

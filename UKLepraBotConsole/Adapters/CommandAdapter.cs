@@ -53,6 +53,8 @@ namespace UKLepraBotConsole
                 reply = SecretCommand(message);
             else if (messageText.ToLower().Contains("/ban"))
                 reply = await BanCommand(message);
+            else if(messageText.ToLower().Contains("/version"))
+                reply = VersionCommand();
             else if (messageText.ToLower().Contains("/reload"))
             {
                 ReloadReactionsCommand();
@@ -148,6 +150,11 @@ namespace UKLepraBotConsole
             var reply =
                 $"Uptime: {(int)uptime.TotalDays} days, {uptime.Hours} hours, {uptime.Minutes} minutes, {uptime.Seconds} seconds.";
             return reply;
+        }
+        
+        private static string VersionCommand()
+        {
+            return Configuration.Version;
         }
 
         private static string StatusCommand(bool? state, int? currentDelay, Tuple<int, int> delaySettings)

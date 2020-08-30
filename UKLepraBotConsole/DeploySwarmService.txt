@@ -1,1 +1,0 @@
-﻿docker service create --name bot --mount type=volume,source=botdata,destination=/app/Data ncksol/ukleprabot:0.2

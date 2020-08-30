@@ -12,6 +12,7 @@ namespace UKLepraBotConsole.Models
         public string MessageId { get;set;}
         public DateTimeOffset DateCreated { get;set;}
         public bool IsBanned { get; set; }
+        public string AuthorId { get; set;}
     }
 
     public class BoyanList

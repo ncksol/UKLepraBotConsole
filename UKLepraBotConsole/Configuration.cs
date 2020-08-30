@@ -56,6 +56,17 @@ namespace UKLepraBotConsole
                     _startupTime = value;
             }
         }
+        
+        private static string _version = null;
+        public static string Version
+        {
+            get => _version;
+            set
+            {
+                if(_version == null)
+                    _version = value;
+            }
+        }
 
         private static string ReadToken(string fileName)
         {

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -63,7 +64,7 @@ namespace UKLepraBotConsole
                 await RunBot();
             }
             else
-            { 
+            {
                 Console.WriteLine("Choose option:");
                 Console.WriteLine("1. Launch bot");
                 Console.WriteLine("2. Create webhook");
@@ -98,6 +99,7 @@ namespace UKLepraBotConsole
             var me = await _bot.GetMeAsync();
             Console.Title = me.Username;
             Configuration.StartupTime = DateTimeOffset.UtcNow;
+            Configuration.Version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
             try
             { 
