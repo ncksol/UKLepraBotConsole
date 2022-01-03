@@ -35,31 +35,31 @@ namespace UKLepraBotConsole
             var parser = new Parser(with => with.CaseInsensitiveEnumValues = true);
             var parsedArguments = parser.ParseArguments<CommandLineOptions>(args);
 
-            await parsedArguments.MapResult(async x => { await Run(x); }, async err => { await ShowErrors(err.ToList());});
+            await parsedArguments.MapResult(async x => { await Run(x); }, async err => { await ShowErrors(err.ToList()); });
         }
 
         private static async Task Run(CommandLineOptions options)
-        {            
+        {
             Configuration.BotToken = options.BotToken;
             Configuration.TelegramBotId = options.BotId;
             Configuration.SecretKey = options.SecretKey;
 
-            if(string.IsNullOrEmpty(Configuration.BotToken))
+            if (string.IsNullOrEmpty(Configuration.BotToken))
             {
                 Configuration.BotToken = HelperMethods.ReadToken("bot.token");
             }
-            if(string.IsNullOrEmpty(Configuration.SecretKey))
+            if (string.IsNullOrEmpty(Configuration.SecretKey))
             {
                 Configuration.SecretKey = HelperMethods.ReadToken("secret.key");
             }
-            if(string.IsNullOrEmpty(Configuration.TelegramBotId))
+            if (string.IsNullOrEmpty(Configuration.TelegramBotId))
             {
                 Configuration.TelegramBotId = "ukleprabot";
             }
 
             _bot = new TelegramBotClient(Configuration.BotToken);
 
-            if(options.IsService)
+            if (options.IsService)
             {
                 await RunBot();
             }
@@ -73,7 +73,7 @@ namespace UKLepraBotConsole
 
                 int.TryParse(Console.ReadLine(), out var selectedOption);
 
-                switch(selectedOption)
+                switch (selectedOption)
                 {
                     case 1:
                         await RunBot();
@@ -87,7 +87,7 @@ namespace UKLepraBotConsole
                     case 4:
                         await DeleteWebhook();
                         break;
-                    default:                    
+                    default:
                         Console.WriteLine("Unknown option");
                         return;
                 }
@@ -102,7 +102,7 @@ namespace UKLepraBotConsole
             Configuration.Version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
             try
-            { 
+            {
                 LoadChatSettings();
                 LoadReactions();
                 LoadBoyans();
@@ -123,14 +123,24 @@ namespace UKLepraBotConsole
 
                 SetupPeriodicSettingsSaving();
 
-                var updateReceiver = new QueuedUpdateReceiver(_bot);
-                updateReceiver.StartReceiving(new UpdateType[] { UpdateType.Message}, HandleErrorAsync, cts.Token);
-                await foreach (var update in updateReceiver.YieldUpdatesAsync())
+                var receiverOptions = new ReceiverOptions
                 {
-                    await HandleUpdateAsync(update, cts.Token);
+                    AllowedUpdates = new UpdateType[] { UpdateType.Message, UpdateType.CallbackQuery },
+                    ThrowPendingUpdates = true
+                };
+
+
+                var updateReceiver = new QueuedUpdateReceiver(_bot, receiverOptions, HandleErrorAsync);
+                try
+                {
+                    await foreach (var update in updateReceiver.WithCancellation(cts.Token))
+                    {
+                        await HandleUpdateAsync(update, cts.Token);
+                    }
                 }
+                catch(OperationCanceledException exception) { }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _bot.SendTextMessageAsync(chatId: Configuration.MasterId, text: $"Exception:{Environment.NewLine}{ex.Message}").Wait();
             }
@@ -138,7 +148,7 @@ namespace UKLepraBotConsole
 
         private static void OnExit(CancellationTokenSource cts)
         {
-            if(_isClosing) return;
+            if (_isClosing) return;
 
             _isClosing = true;
 
@@ -155,25 +165,25 @@ namespace UKLepraBotConsole
         {
             Console.WriteLine("Enter webhook url:");
             var url = Console.ReadLine();
-            if(string.IsNullOrEmpty(url))
-            { 
+            if (string.IsNullOrEmpty(url))
+            {
                 Console.WriteLine("Invalid url");
                 return;
             }
 
-            var success = await _bot.MakeRequestAsync(new SetWebhookRequest(url, null));
+            var success = await _bot.MakeRequestAsync(new SetWebhookRequest(url));
             Console.WriteLine($"Webhook created: {success}");
             Console.ReadKey();
         }
-        
+
         private static async Task GetWebhookInfo()
         {
-            var info = await _bot.MakeRequestAsync(new GetWebhookInfoRequest());            
+            var info = await _bot.MakeRequestAsync(new GetWebhookInfoRequest());
             Console.WriteLine($"Webhook info:");
             Console.WriteLine(JsonConvert.SerializeObject(info));
             Console.ReadKey();
         }
-        
+
         private static async Task DeleteWebhook()
         {
             var success = await _bot.MakeRequestAsync(new DeleteWebhookRequest());
@@ -245,7 +255,7 @@ namespace UKLepraBotConsole
                 return;
             }
 
-            if (message.Type == MessageType.Text || message.Type == MessageType.Sticker || (message.Type == MessageType.Document && message.Animation != null) || 
+            if (message.Type == MessageType.Text || message.Type == MessageType.Sticker || (message.Type == MessageType.Document && message.Animation != null) ||
                 (message.Type == MessageType.Photo && message.Photo != null))
             {
                 var messageAdapterFactory = new MessageAdapterFactory(_bot, _chatSettings, _reactions, _boyans);
@@ -268,9 +278,9 @@ namespace UKLepraBotConsole
                 _ => exception.ToString()
             };
 
-            Console.WriteLine(ErrorMessage);            
+            Console.WriteLine(ErrorMessage);
 
-            if((exception is ApiRequestException) == false)
+            if ((exception is ApiRequestException) == false)
             {
                 _bot.SendTextMessageAsync(chatId: Configuration.MasterId, text: $"Exception:{Environment.NewLine}{ErrorMessage}").Wait();
             }
@@ -290,7 +300,7 @@ namespace UKLepraBotConsole
             var reactionsString = ReadSettings("reactions.json");
             _reactions = JsonConvert.DeserializeObject<ReactionsList>(reactionsString) ?? new ReactionsList();
         }
-        
+
         private static void LoadBoyans()
         {
             var boyansString = ReadSettings("boyans.json");
@@ -304,13 +314,13 @@ namespace UKLepraBotConsole
 
             var settingString = string.Empty;
             using (var reader = file.OpenText())
-            { 
+            {
                 settingString = reader.ReadToEnd();
             }
 
             return settingString;
         }
-        
+
         private static void SaveSettings(string fileName, string data)
         {
             File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "Data", fileName), data);
@@ -323,7 +333,7 @@ namespace UKLepraBotConsole
                 var chatSettingsString = JsonConvert.SerializeObject(_chatSettings, Formatting.Indented);
                 SaveSettings("chatsettings.json", chatSettingsString);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
@@ -339,13 +349,13 @@ namespace UKLepraBotConsole
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-            }            
+            }
         }
 
         private static void CleanTemp()
         {
             var tempFolderDir = new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "Tmp"));
-            if(tempFolderDir.Exists)
+            if (tempFolderDir.Exists)
             {
                 foreach (var tmpFile in tempFolderDir.EnumerateFiles())
                 {
