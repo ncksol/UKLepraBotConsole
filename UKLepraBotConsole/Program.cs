@@ -138,6 +138,7 @@ namespace UKLepraBotConsole
                         await HandleUpdateAsync(update, cts.Token);
                     }
                 }
+                catch(RequestException e) { }
                 catch(OperationCanceledException exception) { }
             }
             catch (Exception ex)
