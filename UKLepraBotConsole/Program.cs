@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -280,8 +281,16 @@ namespace UKLepraBotConsole
             };
 
             Console.WriteLine(ErrorMessage);
-
-            if ((exception is ApiRequestException) == false)
+            
+            if (exception is ApiRequestException)
+            {
+                _bot.SendTextMessageAsync(chatId: Configuration.MasterId, text: $"Exception:{Environment.NewLine}{ErrorMessage}").Wait();
+            }
+            else if (exception is RequestException && exception.InnerException is HttpRequestException)
+            {
+                return;
+            }
+            else
             {
                 _bot.SendTextMessageAsync(chatId: Configuration.MasterId, text: $"Exception:{Environment.NewLine}{ErrorMessage}").Wait();
             }
